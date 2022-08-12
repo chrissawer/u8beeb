@@ -67,7 +67,7 @@ class IntegrationTestU8type(unittest.TestCase):
         self.assertEqual('AXB>\n', chrisOutput.split('\r')[1]) # No newline yet
 
     def test_unicodeRepeat(self):
-        self.createTestSsd('A|€|€|B') # pipe in first slot, euro in second slot
+        self.createTestSsd('A|€|€|B') # bar in first slot, euro in second slot
         chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename,
                                                                   'PRINT ~?&' + '%X' % (beeb.getAddr('charSlots')) +
                                                                       ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 1) +
@@ -84,21 +84,20 @@ class IntegrationTestU8type(unittest.TestCase):
         self.assertEqual('FF', outputBytes[5])
 
     def test_unicodeSlotReuse(self):
-        self.createTestSsd('Sìthean Mòr')
-        #self.createTestSsd('àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ') # TODO change this into a slot reuse test
+        #self.createTestSsd('ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß')
+        #self.createTestSsd('àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ')
         #self.createTestSsd('¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿')
+
+        #self.createTestSsd('àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ|€') # 34 characters - bar reuses first slot, euro second
+        self.createTestSsd('àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß|€') # same but 66 - check wrap
         chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename,
                                                                   'PRINT ~?&' + '%X' % (beeb.getAddr('charSlots')) +
                                                                       ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 1) +
                                                                       ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 2) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 3) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 4) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 5)],
+                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 3)],
                                                                   debug=True)
         outputBytes = chrisOutput.strip().split()
         self.assertEqual('%X' % '|'.encode('utf-16-le')[0], outputBytes[0])
         self.assertEqual('%X' % '|'.encode('utf-16-le')[1], outputBytes[1])
         self.assertEqual('%X' % '€'.encode('utf-16-le')[0], outputBytes[2])
         self.assertEqual('%X' % '€'.encode('utf-16-le')[1], outputBytes[3])
-        self.assertEqual('FF', outputBytes[4])
-        self.assertEqual('FF', outputBytes[5])

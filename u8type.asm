@@ -30,6 +30,7 @@ ORG &70
 .flags        EQUB 0
 .buffer       EQUB 0 \ TODO
 .bytesToSkip  EQUB 0
+.nextReuseSlot EQUB 0
 \ TODO how much of this needs to be in zero page? [&70 - &8f are available]
 
 ORG &2000

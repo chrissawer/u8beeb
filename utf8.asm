@@ -291,9 +291,17 @@ ENDMACRO
     INY : LDA (tempPtrL),Y : CMP #&FF : BEQ foundEmptySlot
     LDA #&FF : JMP compareBytes
 .exhaustedSlots \ char not defined
-    LDX #0
     LDA #0
+    LDX nextReuseSlot
+    CPX #62 \ last slot is index 31 (2 bytes each)
+    BEQ exhaustedSlotsWrap
+    INC nextReuseSlot
+    INC nextReuseSlot
     RTS
+.exhaustedSlotsWrap
+    STA nextReuseSlot \ A = 0
+    RTS
+
 .foundEmptySlot \ char not defined
     DEY : TYA : TAX
     LDA #0
