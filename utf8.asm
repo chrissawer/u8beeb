@@ -96,6 +96,7 @@ CUSTOM_CHAR_START = &E0
     \ Check for Unix LF line endings
     CMP #ASCII_LF
     BNE checkBeebDos
+    JSR osnewl
     LDA #FLAGS_UNIX_LE
     JMP setFlagsAndReturnSingle
 .checkBeebDos
@@ -105,9 +106,11 @@ CUSTOM_CHAR_START = &E0
     TXA \ check second byte
     CMP #ASCII_LF
     BNE storeBeeb
+    JSR osnewl
     LDA #FLAGS_DOS_LE
     JMP setFlagsAndReturnDouble
 .storeBeeb
+    JSR osnewl
     LDA #FLAGS_BEEB_LE
     JMP setFlagsAndReturnSingle
 

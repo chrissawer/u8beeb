@@ -3,6 +3,7 @@ osbget = &FFD7
 osargs = &FFDA
 osrdch = &FFE0
 osasci = &FFE3
+osnewl = &FFE7
 oswrch = &FFEE
 
 FLAGS_UNIX_LE     =  &1

@@ -19,6 +19,7 @@ class IntegrationTestU8type(unittest.TestCase):
             with open(buildDir + self.textFilename, 'wb') as fileOut:
                 fileOut.write(textBinary)
             os.system('beeb putfile ' + buildDir + self.outputSsd + ' ' + buildDir + self.textFilename)
+            #os.system('beeb putfile ' + buildDir + self.outputSsd + ' ' + buildDir + 'testtext')
 
     def test_noParameter(self):
         self.createTestSsd()
@@ -35,10 +36,17 @@ class IntegrationTestU8type(unittest.TestCase):
         chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename])
         self.assertEqual('File is 0 length', chrisOutput.split('\r')[1])
 
-    def test_Ascii(self):
-        self.createTestSsd("A'A|A`A")
-        chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename, 'PRINT'])
-        #self.assertEqual('AxB>\n', chrisOutput.split('\r')[1]) # No newline yet
+    def test_asciiNewlines(self):
+        self.createTestSsd("A\nB\rC\r\nD\n\rE\n") # \r\n = DOS linefeed
+        command = '*u8type ' + self.textFilename
+        beebBuffer = beeb.runBeebjit(buildDir + self.outputSsd, [command, 'PRINT'], returnFullBuffer=True)
+        self.assertEqual('>' + command, beebBuffer[0])
+        self.assertEqual('A', beebBuffer[1])
+        self.assertEqual('B', beebBuffer[2])
+        self.assertEqual('C', beebBuffer[3])
+        self.assertEqual('D', beebBuffer[4])
+        self.assertEqual('',  beebBuffer[5])
+        self.assertEqual('E', beebBuffer[6])
 
     def test_asciiRemap(self): # A few ASCII characters '|` remap to Unicode versions
         charToTest = '|'
@@ -94,8 +102,7 @@ class IntegrationTestU8type(unittest.TestCase):
                                                                   'PRINT ~?&' + '%X' % (beeb.getAddr('charSlots')) +
                                                                       ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 1) +
                                                                       ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 2) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 3)],
-                                                                  debug=True)
+                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 3)])
         outputBytes = chrisOutput.strip().split()
         self.assertEqual('%X' % '|'.encode('utf-16-le')[0], outputBytes[0])
         self.assertEqual('%X' % '|'.encode('utf-16-le')[1], outputBytes[1])

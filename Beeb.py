@@ -57,6 +57,7 @@ class Beeb:
                 (0x8000, 0x8000)
             ])
 
+        mmu.blocks[2]['memory'][0x7fe7] = 0x60 # hack RTS for osnewl
         mmu.blocks[2]['memory'][0x7fee] = 0x60 # hack RTS for oswrch
         return mmu
 
@@ -89,7 +90,7 @@ class Beeb:
             print('a=%02x x=%02x y=%02x s=%02x pc=%02x flags=%s cycles=%d' % (cpu.r.a, cpu.r.x, cpu.r.y, cpu.r.s, cpu.r.pc, self.getFlags(cpu), cpu.cc))
         return (cycles, cpu.r.a, cpu.r.x, cpu.r.y)
 
-    def runBeebjit(self, ssdFilename, beebCommands, debug=False):
+    def runBeebjit(self, ssdFilename, beebCommands, returnFullBuffer=False, debug=False):
         rawCommands = [command.encode('ascii') for command in beebCommands]
         sp = subprocess.Popen(['beebjit', '-0', ssdFilename, '-terminal', '-headless'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         sp.stdin.write(b'\n'.join(rawCommands) + b'\n\n')
@@ -99,8 +100,6 @@ class Beeb:
         store = []
         while True:
             lineRead = sp.stdout.readline()
-            if debug:
-                print(lineRead)
             store.append(lineRead)
             if foundCommand:
                 break
@@ -111,5 +110,8 @@ class Beeb:
         sp.stdout.close()
         sp.terminate()
         if debug:
-            print(store[-1])
-        return store[-1].decode('ascii')
+            print(store)
+        if returnFullBuffer:
+            return [s.decode('ascii').strip() for s in store[8:]] # TODO hacky
+        else:
+            return store[-1].decode('ascii') # TODO would be nice to get rid of this
