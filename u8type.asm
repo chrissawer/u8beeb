@@ -20,6 +20,7 @@ ASCII_CR    = &0D
 ASCII_SPACE = &20
 
 ORG &70
+\ NOTE these are not auto-initialised!
 .controlBlock EQUD 0 \ must be 4 bytes in zero page for osargs
 .utf16        EQUW 0
 .tempPtrL     EQUB 0
@@ -36,6 +37,10 @@ ORG &70
 
 ORG &2000
 .start
+    LDA #0
+    STA flags
+    STA bytesToSkip
+    STA nextReuseSlot
     JSR readParameter
     CMP #0
     BNE exit
