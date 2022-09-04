@@ -95,6 +95,7 @@ class IntegrationTestU8type(unittest.TestCase):
         #self.createTestSsd('ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß')
         #self.createTestSsd('àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ')
         #self.createTestSsd('¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿')
+        #self.createTestSsd('ŒœŴŵŶŷ‘’“”„–—†‡•…‰‹›€™')
 
         #self.createTestSsd('àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ|€') # 34 characters - bar reuses first slot, euro second
         self.createTestSsd('àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß|€') # same but 66 - check wrap
