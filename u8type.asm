@@ -47,6 +47,7 @@ ORG &2000
     RTS
 
 INCLUDE "../utf8.asm"
+INCLUDE "../charDefinitions.asm"
 
 .end
 
