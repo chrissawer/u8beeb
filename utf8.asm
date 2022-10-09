@@ -9,7 +9,9 @@ CUSTOM_CHAR_START = &E0
     CMP #&D
     BNE readParameterOk
     LDA #1 \ error 1 and return not ok
-    JSR printError
+    PHA
+        JSR printError
+    PLA
     RTS
 .readParameterOk
     LDA #0 \ return ok
@@ -22,7 +24,9 @@ CUSTOM_CHAR_START = &E0
     JSR osfind \ ADUG p178 "OSFIND Open a File", needs filename pointer in controlBlock
     BNE openFileOk
     LDA #2 \ error 2 and return not ok
-    JSR printError
+    PHA
+        JSR printError
+    PLA
     RTS
 .openFileOk
     STA fileHandle

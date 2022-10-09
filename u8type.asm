@@ -41,14 +41,15 @@ ORG &2000
     STA flags
     STA bytesToSkip
     STA nextReuseSlot
+
     JSR readParameter
-    CMP #0
-    BNE exit
+    CMP #0 : BNE exit
+
     JSR openFile
-    BNE exit
+    CMP #0 : BNE exit
+
     JSR readContents
 .exit
-    \ TODO RTS vs BRK
     RTS
 
 INCLUDE "../utf8.asm"
