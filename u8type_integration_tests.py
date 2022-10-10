@@ -23,18 +23,18 @@ class IntegrationTestU8type(unittest.TestCase):
 
     def test_noParameter(self):
         self.createTestSsd()
-        chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type'])
-        self.assertEqual('No parameter supplied', chrisOutput.split('\r')[1])
+        commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type'])
+        self.assertEqual('No parameter supplied', commandOutput.split('\r')[1])
 
     def test_invalidFilename(self):
         self.createTestSsd()
-        chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type invalid'])
-        self.assertEqual('File not found', chrisOutput.split('\r')[1])
+        commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type invalid'])
+        self.assertEqual('File not found', commandOutput.split('\r')[1])
 
     def test_emptyFile(self):
         self.createTestSsd('')
-        chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename])
-        self.assertEqual('File is 0 length', chrisOutput.split('\r')[1])
+        commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename])
+        self.assertEqual('File is 0 length', commandOutput.split('\r')[1])
 
     def test_asciiNewlines(self):
         self.createTestSsd("A\nB\rC\r\nD\n\rE\n") # \r\n = DOS linefeed
@@ -53,8 +53,8 @@ class IntegrationTestU8type(unittest.TestCase):
         self.createTestSsd('A' + charToTest + 'B')
         charSlotsAddr = '%X' % beeb.getAddr('charSlots')
         charSlotsAddrN = '%X' % (beeb.getAddr('charSlots') + 1)
-        chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename, 'PRINT ~?&' + charSlotsAddr + ', ~?&' + charSlotsAddrN])
-        outputBytes = chrisOutput.strip().split()
+        commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename, 'PRINT ~?&' + charSlotsAddr + ', ~?&' + charSlotsAddrN])
+        outputBytes = commandOutput.strip().split()
         self.assertEqual('%X' % charToTest.encode('utf-16-le')[0], outputBytes[0])
         self.assertEqual('%X' % charToTest.encode('utf-16-le')[1], outputBytes[1])
 
@@ -63,27 +63,27 @@ class IntegrationTestU8type(unittest.TestCase):
         self.createTestSsd('A' + charToTest + 'B')
         charSlotsAddr = '%X' % beeb.getAddr('charSlots')
         charSlotsAddrN = '%X' % (beeb.getAddr('charSlots') + 1)
-        chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename, 'PRINT ~?&' + charSlotsAddr + ', ~?&' + charSlotsAddrN])
-        outputBytes = chrisOutput.strip().split()
+        commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename, 'PRINT ~?&' + charSlotsAddr + ', ~?&' + charSlotsAddrN])
+        outputBytes = commandOutput.strip().split()
         self.assertEqual('%X' % charToTest.encode('utf-16-le')[0], outputBytes[0])
         self.assertEqual('%X' % charToTest.encode('utf-16-le')[1], outputBytes[1])
 
     def test_unicodeMissing(self):
         self.createTestSsd('AБB')
-        chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename])
-        outputBytes = chrisOutput.strip().split()
-        self.assertEqual('AXB>\n', chrisOutput.split('\r')[1]) # No newline yet
+        commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename])
+        outputBytes = commandOutput.strip().split()
+        self.assertEqual('AXB>\n', commandOutput.split('\r')[1]) # No newline yet
 
     def test_unicodeRepeat(self):
         self.createTestSsd('A|€|€|B') # bar in first slot, euro in second slot
-        chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename,
-                                                                  'PRINT ~?&' + '%X' % (beeb.getAddr('charSlots')) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 1) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 2) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 3) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 4) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 5)])
-        outputBytes = chrisOutput.strip().split()
+        commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename,
+                                                                    'PRINT ~?&' + '%X' % (beeb.getAddr('charSlots')) +
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 1) +
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 2) +
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 3) +
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 4) +
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 5)])
+        outputBytes = commandOutput.strip().split()
         self.assertEqual('%X' % '|'.encode('utf-16-le')[0], outputBytes[0])
         self.assertEqual('%X' % '|'.encode('utf-16-le')[1], outputBytes[1])
         self.assertEqual('%X' % '€'.encode('utf-16-le')[0], outputBytes[2])
@@ -99,12 +99,12 @@ class IntegrationTestU8type(unittest.TestCase):
 
         #self.createTestSsd('àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ|€') # 34 characters - bar reuses first slot, euro second
         self.createTestSsd('àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß|€') # same but 66 - check wrap
-        chrisOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename,
-                                                                  'PRINT ~?&' + '%X' % (beeb.getAddr('charSlots')) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 1) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 2) +
-                                                                      ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 3)])
-        outputBytes = chrisOutput.strip().split()
+        commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename,
+                                                                    'PRINT ~?&' + '%X' % (beeb.getAddr('charSlots')) +
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 1) +
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 2) +
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 3)])
+        outputBytes = commandOutput.strip().split()
         self.assertEqual('%X' % '|'.encode('utf-16-le')[0], outputBytes[0])
         self.assertEqual('%X' % '|'.encode('utf-16-le')[1], outputBytes[1])
         self.assertEqual('%X' % '€'.encode('utf-16-le')[0], outputBytes[2])
