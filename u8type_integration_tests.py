@@ -40,13 +40,13 @@ class IntegrationTestU8type(unittest.TestCase):
         self.createTestSsd("A\nB\rC\r\nD\n\rE\n") # \r\n = DOS linefeed
         command = '*u8type ' + self.textFilename
         beebBuffer = beeb.runBeebjit(buildDir + self.outputSsd, [command, 'PRINT'], returnFullBuffer=True)
-        self.assertEqual('>' + command, beebBuffer[0])
-        self.assertEqual('A', beebBuffer[1])
-        self.assertEqual('B', beebBuffer[2])
-        self.assertEqual('C', beebBuffer[3])
-        self.assertEqual('D', beebBuffer[4])
-        self.assertEqual('',  beebBuffer[5])
-        self.assertEqual('E', beebBuffer[6])
+        self.assertEqual('>' + command, beebBuffer[6])
+        self.assertEqual('A', beebBuffer[7])
+        self.assertEqual('B', beebBuffer[8])
+        self.assertEqual('C', beebBuffer[9])
+        self.assertEqual('D', beebBuffer[10])
+        self.assertEqual('',  beebBuffer[11])
+        self.assertEqual('E', beebBuffer[12])
 
     def test_asciiRemap(self): # A few ASCII characters '|` remap to Unicode versions
         charToTest = '|'

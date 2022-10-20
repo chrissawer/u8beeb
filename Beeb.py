@@ -90,9 +90,13 @@ class Beeb:
             print('a=%02x x=%02x y=%02x s=%02x pc=%02x flags=%s cycles=%d' % (cpu.r.a, cpu.r.x, cpu.r.y, cpu.r.s, cpu.r.pc, self.getFlags(cpu), cpu.cc))
         return (cycles, cpu.r.a, cpu.r.x, cpu.r.y)
 
-    def runBeebjit(self, ssdFilename, beebCommands, returnFullBuffer=False, debug=False):
+    def runBeebjit(self, ssdFilename, beebCommands, romFilename=None, returnFullBuffer=False, linesFollowingCommand=1, debug=False):
         rawCommands = [command.encode('ascii') for command in beebCommands]
-        sp = subprocess.Popen(['beebjit', '-0', ssdFilename, '-terminal', '-headless'], stdin=subprocess.PIPE, stdout=subprocess.PIPE)
+        cli = ['beebjit']
+        cli += ['-0', ssdFilename] if ssdFilename is not None else []
+        cli += ['-rom', '7', romFilename] if romFilename is not None else []
+        cli += ['-terminal', '-headless']
+        sp = subprocess.Popen(cli, stdin=subprocess.PIPE, stdout=subprocess.PIPE)
         sp.stdin.write(b'\n'.join(rawCommands) + b'\n\n')
         sp.stdin.flush()
 
@@ -102,6 +106,8 @@ class Beeb:
             lineRead = sp.stdout.readline()
             store.append(lineRead)
             if foundCommand:
+                linesFollowingCommand -= 1
+            if linesFollowingCommand == 0:
                 break
             if rawCommands[-1] in store[-1]:
                 foundCommand = True
@@ -112,6 +118,7 @@ class Beeb:
         if debug:
             print(store)
         if returnFullBuffer:
-            return [s.decode('ascii').strip() for s in store[8:]] # TODO hacky
+            messagesStart = store.index(b'\rBBC Computer \x0032K\x07\x00\x08\n')
+            return [s.decode('ascii').strip() for s in store[messagesStart:]]
         else:
             return store[-1].decode('ascii') # TODO would be nice to get rid of this

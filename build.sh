@@ -18,5 +18,5 @@ beebasm -i ../u8type.asm -do u8type.ssd
 cd ..
 
 python3 -m unittest u8type_unit_tests.UnitTestU8type
-#python3 -m unittest u8type_integration_tests.IntegrationTestU8type
-python3 -m unittest u8type_integration_tests.IntegrationTestU8type.test_unicodeSlotReuse
+python3 -m unittest u8type_integration_tests.IntegrationTestU8type
+#python3 -m unittest u8type_integration_tests.IntegrationTestU8type.test_unicodeSlotReuse
