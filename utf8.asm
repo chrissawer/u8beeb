@@ -232,13 +232,13 @@ ENDMACRO
     CALC_PTR errorBlock
 .printString \ Also called elsewhere
     LDY #0
-.printStringLoop
     LDA (tempPtrL),Y
+.printStringLoop
     JSR oswrch
-    CMP #&D : BEQ printStringDone
     INY
-    JMP printStringLoop
-.printStringDone
+    LDA (tempPtrL),Y
+    BNE printStringLoop
+    JSR osnewl
     RTS
 
 \ TODO newline chars
@@ -357,10 +357,10 @@ ENDMACRO
     EQUW error2
     EQUW error3
     EQUW error4
-.error1 EQUS "No parameter supplied", &D
-.error2 EQUS "File not found", &D
-.error3 EQUS "File is 0 length", &D
-.error4 EQUS "Error4", &D
+.error1 EQUS "No parameter supplied", 0
+.error2 EQUS "File not found", 0
+.error3 EQUS "File is 0 length", 0
+.error4 EQUS "Error4", 0
 
 .flagBlock
     EQUW flag1
@@ -371,14 +371,14 @@ ENDMACRO
     EQUW flag6
     EQUW flag7
     EQUW flag8
-.flag1 EQUS "Chris message binary", &D
-.flag2 EQUS "UTF8QUAD", &D
-.flag3 EQUS "UTF8TRIPLE", &D
-.flag4 EQUS "UTF8DOUBLE", &D
-.flag5 EQUS "Chris message ascii", &D
-.flag6 EQUS "DOS line endings", &D
-.flag7 EQUS "BBC line endings", &D
-.flag8 EQUS "Unix line endings", &D
+.flag1 EQUS "Chris message binary", 0
+.flag2 EQUS "UTF8QUAD", 0
+.flag3 EQUS "UTF8TRIPLE", 0
+.flag4 EQUS "UTF8DOUBLE", 0
+.flag5 EQUS "Chris message ascii", 0
+.flag6 EQUS "DOS line endings", 0
+.flag7 EQUS "BBC line endings", 0
+.flag8 EQUS "Unix line endings", 0
 
 .charSlots \ 32 slots to define (0xe0 to 0xff)
     EQUW &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF, &FFFF 

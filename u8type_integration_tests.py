@@ -24,17 +24,17 @@ class IntegrationTestU8type(unittest.TestCase):
     def test_noParameter(self):
         self.createTestSsd()
         commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type'])
-        self.assertEqual('No parameter supplied', commandOutput.split('\r')[1])
+        self.assertEqual('No parameter supplied\n', commandOutput.split('\r')[1])
 
     def test_invalidFilename(self):
         self.createTestSsd()
         commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type invalid'])
-        self.assertEqual('File not found', commandOutput.split('\r')[1])
+        self.assertEqual('File not found\n', commandOutput.split('\r')[1])
 
     def test_emptyFile(self):
         self.createTestSsd('')
         commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename])
-        self.assertEqual('File is 0 length', commandOutput.split('\r')[1])
+        self.assertEqual('File is 0 length\n', commandOutput.split('\r')[1])
 
     def test_asciiNewlines(self):
         self.createTestSsd("A\nB\rC\r\nD\n\rE\n") # \r\n = DOS linefeed
