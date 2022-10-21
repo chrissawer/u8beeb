@@ -1,3 +1,5 @@
+buildRom = FALSE
+
 osfind = &FFCE
 osbget = &FFD7
 osargs = &FFDA

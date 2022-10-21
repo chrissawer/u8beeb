@@ -1,6 +1,8 @@
 CUSTOM_CHAR_START = &E0
 
 .readParameter \ return 0 in A for success, non-0 for failure
+IF buildRom
+ELSE
     LDA #1
     LDY #0
     LDX #controlBlock
@@ -14,13 +16,26 @@ CUSTOM_CHAR_START = &E0
     PLA
     RTS
 .readParameterOk
+ENDIF
     LDA #0 \ return ok
     RTS
 
 .openFile
-    LDA #&40
+IF buildRom
+    \ set up X and Y to point to command line argument
+    TXA
+    CLC
+    ADC comline
+    TAX
+    LDA #0
+    ADC comline+1
+    TAY
+ELSE
+    \ read X and Y from controlBlock as populated by osargs
     LDX controlBlock
     LDY controlBlock+1
+ENDIF
+    LDA #&40
     JSR osfind \ ADUG p178 "OSFIND Open a File", needs filename pointer in controlBlock
     BNE openFileOk
     LDA #2 \ error 2 and return not ok
