@@ -132,7 +132,8 @@ ORG &8000
 .exit
     RTS
 
-INCLUDE "../utf8.asm"
+INCLUDE "../utf8fileread.asm"
+INCLUDE "../utf8core.asm"
 INCLUDE "../charDefinitions.asm"
 .end
 
