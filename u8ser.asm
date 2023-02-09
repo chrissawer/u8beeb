@@ -48,10 +48,19 @@ ORG &2000
     LDA #2 : LDX #2 : JSR osbyte \ enable RS423 input
     LDA #&15 : LDX #1 : JSR osbyte \ flush RS423 input
 
-    JSR readByte : STY byteReadB
-    JSR readByte : STY byteReadC
-.readContentsLoop
-    JSR readByte
+    LDY #&20 : STY byteReadB
+    LDY #&20 : STY byteReadC
+
+.checkKeyboard
+    LDA #&80 : LDX #&FF : JSR osbyte \ check keyboard buffer
+    CPX #0 : BEQ checkSerial
+    LDA #&91 : LDX #0 : JSR osbyte \ get byte from keyboard buffer
+    LDA #&8A : LDX #2 : JSR osbyte \ put into RS423 output buffer
+.checkSerial
+    LDA #&80 : LDX #&FE : JSR osbyte \ check RS423 input buffer
+    CPX #0 : BEQ noBytesRead
+    LDA #&91 : LDX #1 : JSR osbyte \ get byte from RS423 input buffer
+
     LDA byteReadB : STA byteReadA \ Shuffle B -> A
     LDA byteReadC : STA byteReadB \         C -> B
     STY byteReadC \ Store new byte in C
@@ -61,16 +70,11 @@ ORG &2000
     JSR checkBytes : STA bytesToSkip
 .skipCheck
     DEC bytesToSkip
-    JMP readContentsLoop
+.noBytesRead
+    JMP checkKeyboard
 
 .exit
     RTS
-
-.readByte \ blocks, returns byte in Y
-    LDA #&91 : LDX #1 : JSR osbyte
-    BCS readByte
-    RTS
-
 
 INCLUDE "../utf8core.asm"
 INCLUDE "../charDefinitions.asm"
