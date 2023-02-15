@@ -48,9 +48,6 @@ ORG &2000
     LDA #2 : LDX #2 : JSR osbyte \ enable RS423 input
     LDA #&15 : LDX #1 : JSR osbyte \ flush RS423 input
 
-    LDY #&20 : STY byteReadB
-    LDY #&20 : STY byteReadC
-
 .checkKeyboard
     LDA #&80 : LDX #&FF : JSR osbyte \ check keyboard buffer
     CPX #0 : BEQ checkSerial
@@ -58,22 +55,39 @@ ORG &2000
     LDA #&8A : LDX #2 : JSR osbyte \ put into RS423 output buffer
 .checkSerial
     LDA #&80 : LDX #&FE : JSR osbyte \ check RS423 input buffer
-    CPX #0 : BEQ noBytesRead
+    CPX #0 : BEQ checkKeyboard \ no bytes read
+
     LDA #&91 : LDX #1 : JSR osbyte \ get byte from RS423 input buffer
+    TYA : JSR howManyBytes
+    CMP #1 : BEQ single
+    CMP #2 : BEQ double
+    CMP #3 : BEQ triple
+    CMP #4 : BEQ quad
 
-    LDA byteReadB : STA byteReadA \ Shuffle B -> A
-    LDA byteReadC : STA byteReadB \         C -> B
-    STY byteReadC \ Store new byte in C
-
-    LDA bytesToSkip : BNE skipCheck
-    LDY byteReadC : LDX byteReadB : LDA byteReadA
-    JSR checkBytes : STA bytesToSkip
-.skipCheck
-    DEC bytesToSkip
-.noBytesRead
+.single
+    TYA : JSR checkBytes
     JMP checkKeyboard
 
-.exit
+.double
+    STY byteReadA : JSR readByteBlocking
+    TYA : TAX : LDA byteReadA : JSR checkBytes
+    JMP checkKeyboard
+
+.triple
+    STY byteReadA : JSR readByteBlocking
+    STY byteReadB : JSR readByteBlocking
+    LDA byteReadA : LDX byteReadB : JSR checkBytes
+    JMP checkKeyboard
+
+.quad
+    JSR readByteBlocking
+    JSR readByteBlocking
+    JSR readByteBlocking
+    JMP checkKeyboard
+
+.readByteBlocking \ blocks, returns byte in Y
+    LDA #&91 : LDX #1 : JSR osbyte
+    BCS readByteBlocking
     RTS
 
 INCLUDE "../utf8core.asm"
