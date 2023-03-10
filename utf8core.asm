@@ -243,6 +243,8 @@ ENDMACRO
 .charLitZero \ check if charBig also zero, if so we have reached the end
     LDY #1 : LDA (tempPtrL),Y : BEQ bothZero
     CMP utf16,Y : BNE nextChar
+    LDY #0 : LDA (tempPtrL),Y
+    CMP utf16,Y : BNE nextChar
     JMP bothMatch
 .bothZero
     LDA #0 \ failure
