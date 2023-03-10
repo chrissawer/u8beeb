@@ -247,5 +247,46 @@
     EQUW &2122 \ ™
     EQUB &F1, &5B, &55, &51, &00, &00, &00, &00
 
+    EQUW &2500 \ light horizontal
+    EQUB &00, &00, &00, &FF, &00, &00, &00, &00
+    EQUW &2502 \ light vertical
+    EQUB &18, &18, &18, &18, &18, &18, &18, &18
+    EQUW &250C \ light down and right
+    EQUB &00, &00, &00, &1F, &18, &18, &18, &18
+    EQUW &2510 \ light down and left
+    EQUB &00, &00, &00, &F8, &18, &18, &18, &18
+    EQUW &2514 \ light up and right
+    EQUB &18, &18, &18, &1F, &00, &00, &00, &00
+    EQUW &2518 \ light up and left
+    EQUB &18, &18, &18, &F8, &00, &00, &00, &00
+    EQUW &251C \ light vertical and right
+    EQUB &18, &18, &18, &1F, &18, &18, &18, &18
+    EQUW &2524 \ light vertical and left
+    EQUB &18, &18, &18, &F8, &18, &18, &18, &18
+    EQUW &252C \ light down and horizontal
+    EQUB &00, &00, &00, &FF, &18, &18, &18, &18
+    EQUW &2534 \ light up and horizontal
+    EQUB &18, &18, &18, &FF, &00, &00, &00, &00
+    EQUW &253C \ light vertical and horizontal
+    EQUB &18, &18, &18, &FF, &18, &18, &18, &18
+
+    EQUW &256D
+    EQUB &00, &00, &00, &07, &0C, &18, &18, &18
+    EQUW &256E
+    EQUB &00, &00, &00, &E0, &30, &18, &18, &18
+    EQUW &256F
+    EQUB &18, &18, &30, &E0, &00, &00, &00, &00
+    EQUW &2570
+    EQUB &18, &18, &0C, &07, &00, &00, &00, &00
+
+    EQUW &2574 \ light left
+    EQUB &00, &00, &00, &F8, &00, &00, &00, &00
+    EQUW &2575 \ light up
+    EQUB &18, &18, &18, &18, &00, &00, &00, &00
+    EQUW &2576 \ light right
+    EQUB &00, &00, &00, &1F, &00, &00, &00, &00
+    EQUW &2577 \ light down
+    EQUB &00, &00, &00, &18, &18, &18, &18, &18
+
     EQUW 0 \ end marker
 .charDefinitionsEnd
