@@ -215,10 +215,10 @@ ENDMACRO
     RTS
 .slotFirstByteZero
     INY : LDA (tempPtrL),Y : BEQ exhaustedSlots
-    LDA #0 : JMP compareBytes
+    DEY : LDA #0 : JMP compareBytes
 .slotFirstByteFF
     INY : LDA (tempPtrL),Y : CMP #&FF : BEQ foundEmptySlot
-    LDA #&FF : JMP compareBytes
+    DEY : LDA #&FF : JMP compareBytes
 .exhaustedSlots \ char not defined
     LDA #0
     LDX nextReuseSlot

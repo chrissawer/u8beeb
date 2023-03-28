@@ -75,21 +75,25 @@ class IntegrationTestU8type(unittest.TestCase):
         self.assertEqual('AXB>\n', commandOutput.split('\r')[1]) # No newline yet
 
     def test_unicodeRepeat(self):
-        self.createTestSsd('A|€|€|B') # bar in first slot, euro in second slot
+        self.createTestSsd('A|€─|€─|B') # bar in first slot, euro in second slot, light horizontal U+2500 in third slot
         commandOutput = beeb.runBeebjit(buildDir + self.outputSsd, ['*u8type ' + self.textFilename,
                                                                     'PRINT ~?&' + '%X' % (beeb.getAddr('charSlots')) +
                                                                         ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 1) +
                                                                         ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 2) +
                                                                         ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 3) +
                                                                         ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 4) +
-                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 5)])
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 5) +
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 6) +
+                                                                        ', ~?&' + '%X' % (beeb.getAddr('charSlots') + 7)])
         outputBytes = commandOutput.strip().split()
         self.assertEqual('%X' % '|'.encode('utf-16-le')[0], outputBytes[0])
         self.assertEqual('%X' % '|'.encode('utf-16-le')[1], outputBytes[1])
         self.assertEqual('%X' % '€'.encode('utf-16-le')[0], outputBytes[2])
         self.assertEqual('%X' % '€'.encode('utf-16-le')[1], outputBytes[3])
-        self.assertEqual('FF', outputBytes[4])
-        self.assertEqual('FF', outputBytes[5])
+        self.assertEqual('%X' % '─'.encode('utf-16-le')[0], outputBytes[4])
+        self.assertEqual('%X' % '─'.encode('utf-16-le')[1], outputBytes[5])
+        self.assertEqual('FF', outputBytes[6])
+        self.assertEqual('FF', outputBytes[7])
 
     def test_unicodeSlotReuse(self):
         #self.createTestSsd('ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß')
