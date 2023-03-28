@@ -2,6 +2,7 @@ CUSTOM_CHAR_START = &E0
 
 .howManyBytes \ given byte in A, is this the start of a sequence or not? TODO line endings!
     STA buffer
+    CMP #&1B : BEQ escape
     AND #&80 : BEQ one
     LDA buffer
     AND #&E0 : CMP #&C0 : BEQ two
@@ -17,6 +18,8 @@ CUSTOM_CHAR_START = &E0
     LDA #3 : RTS
 .four
     LDA #4 : RTS
+.escape
+    LDA #5 : RTS
 
 .checkBytes \ given bytes in A/X/Y, return with count of bytes parsed in A
     \ Check for Unix LF line endings

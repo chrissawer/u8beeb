@@ -63,6 +63,7 @@ ORG &2000
     CMP #2 : BEQ double
     CMP #3 : BEQ triple
     CMP #4 : BEQ quad
+    CMP #5 : BEQ esc
 
 .single
     TYA : JSR checkBytes
@@ -83,6 +84,18 @@ ORG &2000
     JSR readByteBlocking
     JSR readByteBlocking
     JSR readByteBlocking
+    JMP checkKeyboard
+
+.esc
+    JSR readByteBlocking
+    CPY #&5B : BEQ esc5b
+    TYA : JSR checkBytes \ if not 5b, print it and give up for now!
+    JMP checkKeyboard
+
+.esc5b
+    JSR readByteBlocking
+    TYA : AND #&40 : BEQ esc5b
+    \CPY #&6D : BNE esc5b \ TODO end byte won't always be 6D
     JMP checkKeyboard
 
 .readByteBlocking \ blocks, returns byte in Y
