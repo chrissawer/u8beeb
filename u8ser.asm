@@ -66,6 +66,7 @@ ORG &2000
     CMP #5 : BEQ esc
 
 .single
+    TYA : AND #&60 : BEQ nonPrint
     TYA : JSR checkBytes
     JMP checkKeyboard
 
@@ -86,6 +87,14 @@ ORG &2000
     JSR readByteBlocking
     JMP checkKeyboard
 
+.nonPrint
+    CPY #&0D : BEQ print
+    JMP checkKeyboard
+
+.print
+    TYA : JSR osasci
+    JMP checkKeyboard
+
 .esc
     JSR readByteBlocking
     CPY #&5B : BEQ esc5b
@@ -95,7 +104,6 @@ ORG &2000
 .esc5b
     JSR readByteBlocking
     TYA : AND #&40 : BEQ esc5b
-    \CPY #&6D : BNE esc5b \ TODO end byte won't always be 6D
     JMP checkKeyboard
 
 .readByteBlocking \ blocks, returns byte in Y
