@@ -17,5 +17,4 @@ beebasm -v -i ../u8ser.asm > u8ser.txt
 beebasm -i ../u8ser.asm -do u8ser.ssd
 cd ..
 
-#python3 -m unittest u8ser_integration_tests.IntegrationTestU8rom
-#python3 -m unittest u8ser_integration_tests.IntegrationTestU8rom.test_unicodeRepeat
+python3 -m unittest u8ser_unit_tests.UnitTestU8ser

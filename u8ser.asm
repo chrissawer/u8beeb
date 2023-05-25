@@ -101,10 +101,89 @@ ORG &2000
     TYA : JSR checkBytes \ if not 5b, print it and give up for now!
     JMP checkKeyboard
 
-.esc5b
+.esc5b \ sequences of ASCII numbers (up to 3 digits) separated by a semicolon
+    LDA #0: STA flags \ use flags for stack count
+.esc5bNextPair
+    LDA #0: STA byteReadA : STA byteReadB : STA byteReadC
     JSR readByteBlocking
-    TYA : AND #&40 : BEQ esc5b
+    LDX #0 : CPY #';' : BEQ esc5bPairMid : TYA : AND #&40 : BNE esc5bPairFinal
+    STY byteReadA
+    JSR readByteBlocking
+    LDX #1 : CPY #';' : BEQ esc5bPairMid : TYA : AND #&40 : BNE esc5bPairFinal
+    STY byteReadB
+    JSR readByteBlocking
+    LDX #2 : CPY #';' : BEQ esc5bPairMid : TYA : AND #&40 : BNE esc5bPairFinal
+    STY byteReadC
+    JSR readByteBlocking
+    LDX #3 : CPY #';' : BEQ esc5bPairMidSkip : TYA : AND #&40 : BNE esc5bPairFinalSkip \ not implemented
+    JMP esc5bErrorUnwind
+
+.esc5bPairHandle \ X contains number of characters read
+    CPX #0 : BEQ esc5bZero
+    CPX #1 : BEQ esc5bOne
+    CPX #2 : BEQ esc5bTwo
+    RTS
+.esc5bTwo
+    LDA byteReadB
+    SEC : SBC #'0' : STA byteReadB \ trash prev
+    LDA byteReadA
+    SEC : SBC #'0'
+    ASL A : STA byteReadA \ trash prev
+    ASL A : ASL A
+    CLC : ADC byteReadA \ crude x10
+    ADC byteReadB
+    RTS
+.esc5bOne
+    LDA byteReadA
+    SEC : SBC #'0'
+    RTS
+.esc5bZero
+    LDA #0
+    RTS
+
+.esc5bPairMid \ X contains number of characters read
+    JSR esc5bPairHandle : PHA : INC flags
+.esc5bPairMidSkip
+    JMP esc5bNextPair
+
+.esc5bPairFinal \ X contains number of characters read
+    JSR esc5bPairHandle : PHA : INC flags
+    CPY #'m' : BEQ esc5bColourList
+.esc5bPairFinalSkip
+.esc5bErrorUnwind
+    LDA #'$' : JSR oswrch
+    LDA flags : BEQ esc5bErrorUnwindLoopDone
+.esc5bErrorUnwindLoop
+    PLA : DEC flags : BNE esc5bErrorUnwindLoop
+.esc5bErrorUnwindLoopDone
     JMP checkKeyboard
+
+.esc5bColourList
+.esc5bColourListLoop \ flags will never be zero
+    PLA : JSR esc5bColour
+    DEC flags : BNE esc5bColourListLoop
+    JMP checkKeyboard
+
+.esc5bColour
+    TAX : SEC : SBC #48 : BPL esc5bColourDone \ not a colour
+    TXA : SEC : SBC #40 : BPL esc5bColourBg
+    TXA : SEC : SBC #38 : BPL esc5bColourDone \ not a colour
+    TXA : SEC : SBC #30 : BPL esc5bColourFg
+    CPX #0 : BEQ esc5bColourReset
+    JMP esc5bColourDone
+.esc5bColourReset
+    LDA #17 : JSR oswrch : LDA #7 : JSR oswrch   \ white fg
+    LDA #17 : JSR oswrch : LDA #128 : JSR oswrch \ black bg
+    JMP esc5bColourDone
+.esc5bColourFg
+    LDA #17 : JSR oswrch
+    TXA : SEC : SBC #30 : JSR oswrch \ ANSI 30-37 -> Beeb 0-7
+    JMP esc5bColourDone
+.esc5bColourBg
+    LDA #17 : JSR oswrch
+    TXA : CLC : ADC #88 : JSR oswrch \ ANSI 40-47 -> Beeb 128-135
+.esc5bColourDone
+    RTS
 
 .readByteBlocking \ blocks, returns byte in Y
     LDA #&91 : LDX #1 : JSR osbyte
