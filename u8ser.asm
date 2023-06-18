@@ -170,10 +170,15 @@ ORG &2000
     TXA : SEC : SBC #38 : BPL esc5bColourDone \ not a colour
     TXA : SEC : SBC #30 : BPL esc5bColourFg
     CPX #0 : BEQ esc5bColourReset
+    CPX #7 : BEQ esc5bColourInvert
     JMP esc5bColourDone
 .esc5bColourReset
     LDA #17 : JSR oswrch : LDA #7 : JSR oswrch   \ white fg
     LDA #17 : JSR oswrch : LDA #128 : JSR oswrch \ black bg
+    JMP esc5bColourDone
+.esc5bColourInvert
+    LDA #17 : JSR oswrch : LDA #0 : JSR oswrch   \ black fg
+    LDA #17 : JSR oswrch : LDA #135 : JSR oswrch \ white bg
     JMP esc5bColourDone
 .esc5bColourFg
     LDA #17 : JSR oswrch
