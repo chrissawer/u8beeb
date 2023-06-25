@@ -138,7 +138,7 @@ ORG &2000
     SEC : SBC #'0'
     RTS
 .esc5bZero
-    LDA #0
+    LDA #0 \ Default to zero if no characters
     RTS
 
 .esc5bPairMid \ X contains number of characters read
@@ -149,14 +149,33 @@ ORG &2000
 .esc5bPairFinal \ X contains number of characters read
     JSR esc5bPairHandle : PHA : INC flags
     CPY #'m' : BEQ esc5bColourList
+    CPY #'J' : BEQ esc5bEraseInDisplay
+    LDA #'$' : JSR oswrch \ TODO debug
+    TYA : JSR oswrch \ TODO debug unhandled code between dollar signs
 .esc5bPairFinalSkip
 .esc5bErrorUnwind
-    LDA #'$' : JSR oswrch
+    LDA #'$' : JSR oswrch \ TODO debug
     LDA flags : BEQ esc5bErrorUnwindLoopDone
 .esc5bErrorUnwindLoop
     PLA : DEC flags : BNE esc5bErrorUnwindLoop
 .esc5bErrorUnwindLoopDone
     JMP checkKeyboard
+
+.esc5bEraseInDisplay
+.esc5bEraseInDisplayLoop
+    PLA : JSR esc5bEraseInDisplaySwitch
+    DEC flags : BNE esc5bEraseInDisplayLoop
+    JMP checkKeyboard
+
+.esc5bEraseInDisplaySwitch
+    \ TODO 0/missing
+    \ TODO 1
+    CMP #2 : BEQ esc5bEraseInDisplayFull
+    CMP #3 : BEQ esc5bEraseInDisplayFull
+    RTS
+.esc5bEraseInDisplayFull
+    LDA #12 : JSR oswrch \ VDU 12
+    RTS
 
 .esc5bColourList
 .esc5bColourListLoop \ flags will never be zero
