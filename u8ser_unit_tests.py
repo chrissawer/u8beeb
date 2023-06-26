@@ -45,13 +45,3 @@ class UnitTestU8ser(unittest.TestCase):
         memory = beeb.setupMemory()
         (cycles, a, x, y) = beeb.runCode(memory, 'esc5bColour', a=0)
         self.assertEqual(a, 128) # black bg
-
-    def test_2J(self):
-        memory = beeb.setupMemory()
-        (cycles, a, x, y) = beeb.runCode(memory, 'esc5bEraseInDisplaySwitch', a=2)
-        self.assertEqual(a, 12)  # CLS
-
-    def test_3J(self):
-        memory = beeb.setupMemory()
-        (cycles, a, x, y) = beeb.runCode(memory, 'esc5bEraseInDisplaySwitch', a=3)
-        self.assertEqual(a, 12)  # CLS

@@ -116,7 +116,7 @@ ORG &2000
     STY byteReadC
     JSR readByteBlocking
     LDX #3 : CPY #';' : BEQ esc5bPairMidSkip : TYA : AND #&40 : BNE esc5bPairFinalSkip \ not implemented
-    JMP esc5bErrorUnwind
+    JMP esc5bCheckForUnwind
 
 .esc5bPairHandle \ X contains number of characters read
     CPX #0 : BEQ esc5bZero
@@ -149,33 +149,45 @@ ORG &2000
 .esc5bPairFinal \ X contains number of characters read
     JSR esc5bPairHandle : PHA : INC flags
     CPY #'m' : BEQ esc5bColourList
+    CPY #'H' : BEQ esc5bCursorPosition
     CPY #'J' : BEQ esc5bEraseInDisplay
     LDA #'$' : JSR oswrch \ TODO debug
     TYA : JSR oswrch \ TODO debug unhandled code between dollar signs
 .esc5bPairFinalSkip
-.esc5bErrorUnwind
-    LDA #'$' : JSR oswrch \ TODO debug
+.esc5bCheckForUnwind
     LDA flags : BEQ esc5bErrorUnwindLoopDone
 .esc5bErrorUnwindLoop
+    LDA #'$' : JSR oswrch \ TODO debug
     PLA : DEC flags : BNE esc5bErrorUnwindLoop
 .esc5bErrorUnwindLoopDone
     JMP checkKeyboard
 
-.esc5bEraseInDisplay
-.esc5bEraseInDisplayLoop
-    PLA : JSR esc5bEraseInDisplaySwitch
-    DEC flags : BNE esc5bEraseInDisplayLoop
-    JMP checkKeyboard
+.esc5bCursorPosition
+    LDA flags : CMP #1 : BNE cursorPositionTwoFlagsOnStack
+    LDA #0 : PHA : INC flags \ push default 0 onto the stack
+.cursorPositionTwoFlagsOnStack
+    LDA #31 : JSR oswrch \ VDU 31
+    DEC flags : PLA : BEQ cursorPositionFirstIsZero
+    SEC : SBC #1 \ move from 1-based to 0-based
+.cursorPositionFirstIsZero
+    JSR oswrch
+    DEC flags : PLA : BEQ cursorPositionSecondIsZero
+    SEC : SBC #1 \ move from 1-based to 0-based
+.cursorPositionSecondIsZero
+    JSR oswrch
+    JMP esc5bCheckForUnwind
 
-.esc5bEraseInDisplaySwitch
+.esc5bEraseInDisplay
+    DEC flags : PLA
     \ TODO 0/missing
     \ TODO 1
     CMP #2 : BEQ esc5bEraseInDisplayFull
     CMP #3 : BEQ esc5bEraseInDisplayFull
-    RTS
+    JMP esc5bCheckForUnwind
+
 .esc5bEraseInDisplayFull
     LDA #12 : JSR oswrch \ VDU 12
-    RTS
+    JMP esc5bCheckForUnwind
 
 .esc5bColourList
 .esc5bColourListLoop \ flags will never be zero
