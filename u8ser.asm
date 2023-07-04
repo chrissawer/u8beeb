@@ -99,6 +99,7 @@ ORG &2000
     JSR readByteBlocking
     CPY #&5B : BEQ esc5b
     TYA : JSR checkBytes \ if not 5b, print it and give up for now!
+    LDA #'!' : JSR oswrch \ TODO debug
     JMP checkKeyboard
 
 .esc5b \ sequences of ASCII numbers (up to 3 digits) separated by a semicolon
@@ -116,7 +117,32 @@ ORG &2000
     STY byteReadC
     JSR readByteBlocking
     LDX #3 : CPY #';' : BEQ esc5bPairMidSkip : TYA : AND #&40 : BNE esc5bPairFinalSkip \ not implemented
+    JSR readByteBlocking
+    LDX #4 : CPY #';' : BEQ esc5bPairMidSkip : TYA : AND #&40 : BNE esc5bPairFinalSkip \ not implemented
+    JSR readByteBlocking
+    LDX #5 : CPY #';' : BEQ esc5bPairMidSkip : TYA : AND #&40 : BNE esc5bPairFinalSkip \ not implemented
     JMP esc5bCheckForUnwind
+
+.esc5bPairMid \ X contains number of characters read
+    JSR esc5bPairHandle : PHA : INC flags
+.esc5bPairMidSkip
+    JMP esc5bNextPair
+
+.esc5bPairFinal \ X contains number of characters read
+    JSR esc5bPairHandle : PHA : INC flags
+    CPY #'m' : BEQ esc5bColourList
+    CPY #'H' : BEQ esc5bCursorPosition
+    CPY #'J' : BEQ esc5bEraseInDisplay
+    LDA #'$' : JSR oswrch \ TODO debug
+    TYA : JSR oswrch \ TODO debug unhandled code between dollar signs
+.esc5bPairFinalSkip
+.esc5bCheckForUnwind
+    LDA flags : BEQ esc5bErrorUnwindLoopDone
+.esc5bErrorUnwindLoop
+    LDA #'$' : JSR oswrch \ TODO debug
+    PLA : DEC flags : BNE esc5bErrorUnwindLoop
+.esc5bErrorUnwindLoopDone
+    JMP checkKeyboard
 
 .esc5bPairHandle \ X contains number of characters read
     CPX #0 : BEQ esc5bZero
@@ -141,28 +167,14 @@ ORG &2000
     LDA #0 \ Default to zero if no characters
     RTS
 
-.esc5bPairMid \ X contains number of characters read
-    JSR esc5bPairHandle : PHA : INC flags
-.esc5bPairMidSkip
-    JMP esc5bNextPair
-
-.esc5bPairFinal \ X contains number of characters read
-    JSR esc5bPairHandle : PHA : INC flags
-    CPY #'m' : BEQ esc5bColourList
-    CPY #'H' : BEQ esc5bCursorPosition
-    CPY #'J' : BEQ esc5bEraseInDisplay
-    LDA #'$' : JSR oswrch \ TODO debug
-    TYA : JSR oswrch \ TODO debug unhandled code between dollar signs
-.esc5bPairFinalSkip
-.esc5bCheckForUnwind
-    LDA flags : BEQ esc5bErrorUnwindLoopDone
-.esc5bErrorUnwindLoop
-    LDA #'$' : JSR oswrch \ TODO debug
-    PLA : DEC flags : BNE esc5bErrorUnwindLoop
-.esc5bErrorUnwindLoopDone
-    JMP checkKeyboard
-
+.esc5bColourList
+    JMP esc5bColourListJmp
 .esc5bCursorPosition
+    JMP esc5bCursorPositionJmp
+.esc5bEraseInDisplay
+    JMP esc5bEraseInDisplayJmp
+
+.esc5bCursorPositionJmp
     LDA flags : CMP #1 : BNE cursorPositionTwoFlagsOnStack
     LDA #0 : PHA : INC flags \ push default 0 onto the stack
 .cursorPositionTwoFlagsOnStack
@@ -177,7 +189,7 @@ ORG &2000
     JSR oswrch
     JMP esc5bCheckForUnwind
 
-.esc5bEraseInDisplay
+.esc5bEraseInDisplayJmp
     DEC flags : PLA
     \ TODO 0/missing
     \ TODO 1
@@ -189,7 +201,7 @@ ORG &2000
     LDA #12 : JSR oswrch \ VDU 12
     JMP esc5bCheckForUnwind
 
-.esc5bColourList
+.esc5bColourListJmp
 .esc5bColourListLoop \ flags will never be zero
     PLA : JSR esc5bColour
     DEC flags : BNE esc5bColourListLoop
