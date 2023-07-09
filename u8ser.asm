@@ -133,6 +133,7 @@ ORG &2000
     CPY #'m' : BEQ esc5bColourList
     CPY #'H' : BEQ esc5bCursorPosition
     CPY #'J' : BEQ esc5bEraseInDisplay
+    CPY #'K' : BEQ esc5bEraseInLine
     LDA #'$' : JSR oswrch \ TODO debug
     TYA : JSR oswrch \ TODO debug unhandled code between dollar signs
 .esc5bPairFinalSkip
@@ -173,6 +174,8 @@ ORG &2000
     JMP esc5bCursorPositionJmp
 .esc5bEraseInDisplay
     JMP esc5bEraseInDisplayJmp
+.esc5bEraseInLine
+    JMP esc5bEraseInLineJmp
 
 .esc5bCursorPositionJmp
     LDA flags : CMP #1 : BNE cursorPositionTwoFlagsOnStack
@@ -199,6 +202,49 @@ ORG &2000
 
 .esc5bEraseInDisplayFull
     LDA #12 : JSR oswrch \ VDU 12
+    JMP esc5bCheckForUnwind
+
+.esc5bEraseInLineJmp
+    LDA #&86 : JSR osbyte \ all three variants read cursor position
+    DEC flags : PLA
+    CMP #0 : BEQ esc5bEraseInLineEOL
+    CMP #1 : BEQ esc5bEraseInLineSOL
+    CMP #2 : BEQ esc5bEraseInLineFull
+    JMP esc5bCheckForUnwind
+
+.esc5bEraseInLineSOL
+    LDA #31 : JSR oswrch \ VDU 31 - move to start of line
+    LDA #0 : JSR oswrch
+    TYA : JSR oswrch
+    LDA #' '
+.esc5bEraseInLineSOLLoop
+    JSR oswrch
+    DEX : BNE esc5bEraseInLineSOLLoop
+    JMP esc5bCheckForUnwind
+
+.esc5bEraseInLineEOL
+    TYA : PHA : TXA : PHA \ store cursor position
+    TXA : EOR #&FF : CLC : ADC #81 \ calculate number of spaces
+    \ TODO 80 should not be hardcoded
+    TAY
+    JMP esc5bEraseInLineGo
+
+.esc5bEraseInLineFull
+    TYA : PHA : TXA : PHA \ store cursor position
+    LDA #31 : JSR oswrch \ VDU 31 - move to start of line
+    LDA #0 : JSR oswrch
+    TYA : JSR oswrch
+    LDY #80
+    \ TODO 80 should not be hardcoded
+.esc5bEraseInLineGo
+    \ Cursor position to restore on stack, number of spaces in Y
+    LDA #' '
+.esc5bEraseInLineLoop
+    JSR oswrch
+    DEY : BNE esc5bEraseInLineLoop
+    LDA #31 : JSR oswrch \ VDU 31 - restore cursor position
+    PLA : JSR oswrch
+    PLA : JSR oswrch
     JMP esc5bCheckForUnwind
 
 .esc5bColourListJmp
