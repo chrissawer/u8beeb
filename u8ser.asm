@@ -202,8 +202,9 @@ ORG &2000
 
 .esc5bEraseInDisplaySOS
     LDA #&86 : JSR osbyte \ read cursor position
+    TYA : BEQ esc5bEraseInLineSOL \ handle Y=0
+    PHA \ save Y position on stack
     TXA : PHA \ save X position on stack
-    TYA : PHA \ save Y position on stack
 
     LDA #31 : JSR oswrch \ VDU 31 - move cursor
     LDA #0 : JSR oswrch : JSR oswrch \ (0, 0)
@@ -214,8 +215,8 @@ ORG &2000
     JSR oswrch : DEX : BNE esc5bEraseInDisplaySOSInnerLoop
     DEY : BNE esc5bEraseInDisplaySOSOuterLoop
 
-    PLA : TAY \ restore Y position
     PLA : TAX \ restore X position
+    PLA : TAY \ restore Y position
     JMP esc5bEraseInLineSOL
 
 .esc5bEraseInDisplayFull
