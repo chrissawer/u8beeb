@@ -195,10 +195,28 @@ ORG &2000
 .esc5bEraseInDisplayJmp
     DEC flags : PLA
     \ TODO 0/missing
-    \ TODO 1
+    CMP #1 : BEQ esc5bEraseInDisplaySOS
     CMP #2 : BEQ esc5bEraseInDisplayFull
     CMP #3 : BEQ esc5bEraseInDisplayFull
     JMP esc5bCheckForUnwind
+
+.esc5bEraseInDisplaySOS
+    LDA #&86 : JSR osbyte \ read cursor position
+    TXA : PHA \ save X position on stack
+    TYA : PHA \ save Y position on stack
+
+    LDA #31 : JSR oswrch \ VDU 31 - move cursor
+    LDA #0 : JSR oswrch : JSR oswrch \ (0, 0)
+    LDA #' '
+.esc5bEraseInDisplaySOSOuterLoop
+    LDX #80 \ TODO should not be hardcoded
+.esc5bEraseInDisplaySOSInnerLoop
+    JSR oswrch : DEX : BNE esc5bEraseInDisplaySOSInnerLoop
+    DEY : BNE esc5bEraseInDisplaySOSOuterLoop
+
+    PLA : TAY \ restore Y position
+    PLA : TAX \ restore X position
+    JMP esc5bEraseInLineSOL
 
 .esc5bEraseInDisplayFull
     LDA #12 : JSR oswrch \ VDU 12
