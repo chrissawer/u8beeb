@@ -232,6 +232,7 @@ ORG &2000
     JMP esc5bCheckForUnwind
 
 .esc5bEraseInLineSOL
+    CPX #0 : BEQ esc5bEraseInLineSOLSkip \ first column - nothing to do
     LDA #31 : JSR oswrch \ VDU 31 - move to start of line
     LDA #0 : JSR oswrch
     TYA : JSR oswrch
@@ -239,12 +240,17 @@ ORG &2000
 .esc5bEraseInLineSOLLoop
     JSR oswrch
     DEX : BNE esc5bEraseInLineSOLLoop
+.esc5bEraseInLineSOLSkip
     JMP esc5bCheckForUnwind
 
 .esc5bEraseInLineEOL
     TYA : PHA : TXA : PHA \ store cursor position
     TXA : EOR #&FF : CLC : ADC #81 \ calculate number of spaces
-    \ TODO 80 should not be hardcoded
+    \ TODO 80 and 32 should not be hardcoded
+    CPY #31 : BNE esc5bEraseInLineEOLSkip
+    CMP #1 : BEQ esc5bEraseInLineRestoreCursor \ bottom right corner
+    SEC : SBC #1 \ bottom row, draw one less space to avoid wrap
+.esc5bEraseInLineEOLSkip
     TAY
     JMP esc5bEraseInLineGo
 
@@ -254,13 +260,16 @@ ORG &2000
     LDA #0 : JSR oswrch
     TYA : JSR oswrch
     LDY #80
-    \ TODO 80 should not be hardcoded
+    CMP #31 : BNE esc5bEraseInLineGo
+    LDY #79 \ bottom row, draw one less space to avoid wrap
+    \ TODO 80/79 and 32 should not be hardcoded
 .esc5bEraseInLineGo
     \ Cursor position to restore on stack, number of spaces in Y
     LDA #' '
 .esc5bEraseInLineLoop
     JSR oswrch
     DEY : BNE esc5bEraseInLineLoop
+.esc5bEraseInLineRestoreCursor
     LDA #31 : JSR oswrch \ VDU 31 - restore cursor position
     PLA : JSR oswrch
     PLA : JSR oswrch
