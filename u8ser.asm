@@ -194,11 +194,48 @@ ORG &2000
 
 .esc5bEraseInDisplayJmp
     DEC flags : PLA
-    \ TODO 0/missing
+    CMP #0 : BEQ esc5bEraseInDisplayEOS
     CMP #1 : BEQ esc5bEraseInDisplaySOS
     CMP #2 : BEQ esc5bEraseInDisplayFull
     CMP #3 : BEQ esc5bEraseInDisplayFull
     JMP esc5bCheckForUnwind
+
+.esc5bEraseInDisplayFull
+    LDA #12 : JSR oswrch \ VDU 12
+    JMP esc5bCheckForUnwind
+
+.esc5bEraseInDisplayEOS
+    LDA #&86 : JSR osbyte \ read cursor position
+    CPY #31 : BEQ esc5bEraseInDisplayEOSJump \ are we on the bottom line TODO 32 should not be hardcoded
+
+    TYA : PHA \ save Y position on stack
+    TXA : PHA \ save X position on stack
+    LDA #31 : JSR oswrch \ VDU 31 - move cursor
+    LDA #0 : JSR oswrch : INY : TYA : JSR oswrch \ start of next line
+
+    TYA : EOR #&FF : CLC : ADC #32 : TAY \ calculate number of lines to erase TODO 32 should not be hardcoded
+    BEQ esc5bEraseInDisplayEOSBottomLine
+
+    LDA #' '
+.esc5bEraseInDisplayEOSOuterLoop
+    LDX #80 \ TODO should not be hardcoded
+.esc5bEraseInDisplayEOSInnerLoop
+    JSR oswrch : DEX : BNE esc5bEraseInDisplayEOSInnerLoop
+    DEY : BNE esc5bEraseInDisplayEOSOuterLoop
+
+.esc5bEraseInDisplayEOSBottomLine
+    LDA #' '
+    LDX #79 \ TODO should not be hardcoded
+.esc5bEraseInDisplayEOS2ndLoop
+    JSR oswrch : DEX : BNE esc5bEraseInDisplayEOS2ndLoop
+
+    LDA #31 : JSR oswrch \ VDU 31 - move cursor
+    PLA : TAX \ restore X position
+    JSR oswrch
+    PLA : TAY \ restore Y position
+    JSR oswrch
+.esc5bEraseInDisplayEOSJump
+    JMP esc5bEraseInLineEOL
 
 .esc5bEraseInDisplaySOS
     LDA #&86 : JSR osbyte \ read cursor position
@@ -218,10 +255,6 @@ ORG &2000
     PLA : TAX \ restore X position
     PLA : TAY \ restore Y position
     JMP esc5bEraseInLineSOL
-
-.esc5bEraseInDisplayFull
-    LDA #12 : JSR oswrch \ VDU 12
-    JMP esc5bCheckForUnwind
 
 .esc5bEraseInLineJmp
     LDA #&86 : JSR osbyte \ all three variants read cursor position
