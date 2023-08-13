@@ -43,6 +43,7 @@ ORG &2000
     STA bytesToSkip
     STA nextReuseSlot
 
+    LDA #&E5 : LDX #1 : JSR osbyte \ treat escape key as ascii
     LDA #7 : LDX #7 : JSR osbyte \ 9600 receive
     LDA #8 : LDX #7 : JSR osbyte \ 9600 transmit
     LDA #2 : LDX #2 : JSR osbyte \ enable RS423 input
