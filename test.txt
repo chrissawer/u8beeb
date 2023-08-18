@@ -1,0 +1,19 @@
+ASCII - note apostrophe, grave accent and vertical line do not use BBC char defs
+ !"#$%&'()*+,-./0123456789:;<=>?
+@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\]^_
+`abcdefghijklmnopqrstuvwxyz{|}~
+
+Latin 1
+TODO nbsp, shy
+ ¡¢£¤¥¦§¨©ª«¬ ®¯°±²³´µ¶·¸¹º»¼½¾¿
+ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß
+àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ
+
+Selected chars from other sets
+ŒœŴŵŶŷ‘’“”„–—†‡•…‰‹›€™
+
+      ╷
+┌┬┐  ╭─╮
+├┼┤ ╶│ │╴
+└┴┘  ╰─╯
+      ╵
