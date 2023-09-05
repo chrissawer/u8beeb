@@ -53,6 +53,8 @@ ORG &2000
     LDA #&80 : LDX #&FF : JSR osbyte \ check keyboard buffer
     CPX #0 : BEQ checkSerial
     LDA #&91 : LDX #0 : JSR osbyte \ get byte from keyboard buffer
+
+    TYA : AND #&80 : BNE nonAscii \ arrow key or copy
     LDA #&8A : LDX #2 : JSR osbyte \ put into RS423 output buffer
 .checkSerial
     LDA #&80 : LDX #&FE : JSR osbyte \ check RS423 input buffer
@@ -65,6 +67,34 @@ ORG &2000
     CMP #3 : BEQ triple
     CMP #4 : BEQ quad
     CMP #5 : BEQ esc
+
+.nonAscii
+    \ Y has the Beeb key
+    CPY #&8F : BEQ nonAsciiUp
+    CPY #&8E : BEQ nonAsciiDown
+    CPY #&8D : BEQ nonAsciiRight
+    CPY #&8C : BEQ nonAsciiLeft
+    JMP checkSerial
+
+.nonAsciiUp
+    LDA #&41 \ A
+    JMP sendAnsi
+.nonAsciiDown
+    LDA #&42 \ B
+    JMP sendAnsi
+.nonAsciiRight
+    LDA #&43 \ C
+    JMP sendAnsi
+.nonAsciiLeft
+    LDA #&44 \ D
+    \JMP sendAnsi \ fall through
+.sendAnsi
+    PHA
+    LDA #&8A : LDX #2
+    LDY #&1B : JSR osbyte \ ESC
+    LDY #&5B : JSR osbyte \ [
+    PLA : TAY : LDA #&8A : JSR osbyte
+    JMP checkSerial
 
 .single
     TYA : AND #&60 : BEQ nonPrint
@@ -88,19 +118,19 @@ ORG &2000
     JSR readByteBlocking
     JMP checkKeyboard
 
+.esc
+    JSR readByteBlocking
+    CPY #&5B : BEQ esc5b
+    TYA : JSR checkBytes \ if not 5b, print it and give up for now!
+    LDA #'!' : JSR oswrch \ TODO debug
+    JMP checkKeyboard
+
 .nonPrint
     CPY #&0D : BEQ print
     JMP checkKeyboard
 
 .print
     TYA : JSR osasci
-    JMP checkKeyboard
-
-.esc
-    JSR readByteBlocking
-    CPY #&5B : BEQ esc5b
-    TYA : JSR checkBytes \ if not 5b, print it and give up for now!
-    LDA #'!' : JSR oswrch \ TODO debug
     JMP checkKeyboard
 
 INCLUDE "../u8ser_esc5b.asm"
