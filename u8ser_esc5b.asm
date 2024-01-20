@@ -2,20 +2,20 @@
     LDA #0: STA flags \ use flags for stack count
 .esc5bNextPair
     LDA #0: STA byteReadA : STA byteReadB : STA byteReadC
-    JSR readByteBlocking
+    GET_NEXT_BYTE
     LDX #0 : CPY #';' : BEQ esc5bPairMid : TYA : AND #&40 : BNE esc5bPairFinal
     STY byteReadA
-    JSR readByteBlocking
+    GET_NEXT_BYTE
     LDX #1 : CPY #';' : BEQ esc5bPairMid : TYA : AND #&40 : BNE esc5bPairFinal
     STY byteReadB
-    JSR readByteBlocking
+    GET_NEXT_BYTE
     LDX #2 : CPY #';' : BEQ esc5bPairMid : TYA : AND #&40 : BNE esc5bPairFinal
     STY byteReadC
-    JSR readByteBlocking
+    GET_NEXT_BYTE
     LDX #3 : CPY #';' : BEQ esc5bPairMidSkip : TYA : AND #&40 : BNE esc5bPairFinalSkip \ not implemented
-    JSR readByteBlocking
+    GET_NEXT_BYTE
     LDX #4 : CPY #';' : BEQ esc5bPairMidSkip : TYA : AND #&40 : BNE esc5bPairFinalSkip \ not implemented
-    JSR readByteBlocking
+    GET_NEXT_BYTE
     LDX #5 : CPY #';' : BEQ esc5bPairMidSkip : TYA : AND #&40 : BNE esc5bPairFinalSkip \ not implemented
     JMP esc5bCheckForUnwind
 
@@ -39,7 +39,7 @@
     LDA #'$' : JSR oswrch \ TODO debug
     PLA : DEC flags : BNE esc5bErrorUnwindLoop
 .esc5bErrorUnwindLoopDone
-    JMP checkKeyboard
+    PROCESSING_DONE
 
 .esc5bPairHandle \ X contains number of characters read
     CPX #0 : BEQ esc5bZero
@@ -208,7 +208,7 @@
 .esc5bColourListLoop \ flags will never be zero
     PLA : JSR esc5bColour
     DEC flags : BNE esc5bColourListLoop
-    JMP checkKeyboard
+    PROCESSING_DONE
 
 .esc5bColour
     TAX : SEC : SBC #48 : BPL esc5bColourDone \ not a colour

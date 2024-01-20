@@ -134,6 +134,12 @@ ORG &2000
     TYA : JSR oswrch
     JMP checkKeyboard
 
+MACRO GET_NEXT_BYTE
+    JSR readByteBlocking
+ENDMACRO
+MACRO PROCESSING_DONE
+    JMP checkKeyboard
+ENDMACRO
 INCLUDE "../u8ser_esc5b.asm"
 
 .readByteBlocking \ blocks, returns byte in Y
