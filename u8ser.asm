@@ -126,6 +126,7 @@ ORG &2000
     JMP checkKeyboard
 
 .nonPrint
+    CPY #&08 : BEQ print
     CPY #&0A : BEQ print
     CPY #&0D : BEQ print
     JMP checkKeyboard
