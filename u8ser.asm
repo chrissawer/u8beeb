@@ -121,14 +121,23 @@ ORG &2000
 .esc
     JSR readByteBlocking
     CPY #&5B : BEQ esc5b
-    TYA : JSR checkBytes \ if not 5b, print it and give up for now!
-    LDA #'!' : JSR oswrch \ TODO debug
+    CPY #'D' : BEQ cursorDown
+    CPY #'M' : BEQ cursorUp
+    LDA #'!' : JSR oswrch \ TODO debug indicates unhandled code
+    JMP checkKeyboard
+
+.cursorDown
+    LDA #&0A: JSR oswrch
+    JMP checkKeyboard
+
+.cursorUp
+    LDA #&0B: JSR oswrch
     JMP checkKeyboard
 
 .nonPrint
-    CPY #&08 : BEQ print
-    CPY #&0A : BEQ print
-    CPY #&0D : BEQ print
+    CPY #&08 : BEQ print \ backspace
+    CPY #&0A : BEQ print \ line feed
+    CPY #&0D : BEQ print \ carriage return
     JMP checkKeyboard
 
 .print
