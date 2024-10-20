@@ -22,11 +22,11 @@ ASCII_SPACE = &20
 
 ORG &70
 \ NOTE these are not auto-initialised!
-.controlBlock EQUD 0 \ must be 4 bytes in zero page for osargs
 .utf16        EQUW 0
 .tempPtrL     EQUB 0
 .tempPtrH     EQUB 0
-.fileHandle   EQUB 0
+.cursorX      EQUB 0
+.cursorY      EQUB 0
 .byteReadA    EQUB 0
 .byteReadB    EQUB 0
 .byteReadC    EQUB 0
@@ -123,15 +123,10 @@ ORG &2000
     CPY #&5B : BEQ esc5b
     CPY #'D' : BEQ cursorDown
     CPY #'M' : BEQ cursorUp
+    CPY #'E' : BEQ cursorNextLine
+    CPY #'7' : BEQ cursorSave
+    CPY #'8' : BEQ cursorRestore
     LDA #'!' : JSR oswrch \ TODO debug indicates unhandled code
-    JMP checkKeyboard
-
-.cursorDown
-    LDA #&0A: JSR oswrch
-    JMP checkKeyboard
-
-.cursorUp
-    LDA #&0B: JSR oswrch
     JMP checkKeyboard
 
 .nonPrint
@@ -142,6 +137,31 @@ ORG &2000
 
 .print
     TYA : JSR oswrch
+    JMP checkKeyboard
+
+.cursorDown
+    LDA #10: JSR oswrch \ VDU 10 - cursor down (LF)
+    JMP checkKeyboard
+
+.cursorUp
+    LDA #11: JSR oswrch \ VDU 11 - cursor up
+    JMP checkKeyboard
+
+.cursorNextLine
+    LDA #13: JSR oswrch \ VDU 13 - CR
+    LDA #10: JSR oswrch \ VDU 10 - cursor down (LF)
+    JMP checkKeyboard
+
+.cursorSave
+    LDA #&86 : JSR osbyte \ read cursor position
+    STX cursorX
+    STY cursorY
+    JMP checkKeyboard
+
+.cursorRestore
+    LDA #31 : JSR oswrch \ VDU 31 - move cursor
+    LDA cursorX : JSR oswrch
+    LDA cursorY : JSR oswrch
     JMP checkKeyboard
 
 MACRO GET_NEXT_BYTE
