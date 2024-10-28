@@ -27,7 +27,11 @@
 .esc5bPairFinal \ X contains number of characters read
     JSR esc5bPairHandle : PHA : INC flags
     CPY #'m' : BEQ esc5bColourList
+
+    CPY #'C' : BEQ esc5bCursorForward
+    CPY #'D' : BEQ esc5bCursorBack
     CPY #'H' : BEQ esc5bCursorPosition
+
     CPY #'J' : BEQ esc5bEraseInDisplay
     CPY #'K' : BEQ esc5bEraseInLine
     LDA #'$' : JSR oswrch \ TODO debug
@@ -66,6 +70,10 @@
 
 .esc5bColourList
     JMP esc5bColourListJmp
+.esc5bCursorForward
+    JMP esc5bCursorForwardJmp
+.esc5bCursorBack
+    JMP esc5bCursorBackJmp
 .esc5bCursorPosition
     JMP esc5bCursorPositionJmp
 .esc5bEraseInDisplay
@@ -73,11 +81,45 @@
 .esc5bEraseInLine
     JMP esc5bEraseInLineJmp
 
+.esc5bCursorForwardJmp
+    LDA #&86 : JSR osbyte \ read cursor position
+    DEC flags : PLA
+    TAY : BNE esc5bCursorForwardSkip
+    LDY #1 \ zero means one
+.esc5bCursorForwardSkip
+    \ Do not go past the right-hand edge of the screen
+    TXA : EOR #&FF \ subtract current X from screen width-1
+    CLC : ADC #80 \ TODO hardcoded width
+    STA buffer \ have to resort to zero page as can't compare A and Y :-(
+    CPY buffer : BMI esc5bCursorForwardLoop \ value in Y is ok - go straight to loop
+    TAY : BEQ esc5bCursorForwardDone \ use calculated maximum unless it is 0
+.esc5bCursorForwardLoop
+    LDA #9 : JSR oswrch \ VDU 9 - cursor forward
+    DEY : BNE esc5bCursorForwardLoop
+.esc5bCursorForwardDone
+    JMP esc5bCheckForUnwind
+
+.esc5bCursorBackJmp
+    LDA #&86 : JSR osbyte \ read cursor position
+    DEC flags : PLA
+    TAY : BNE esc5bCursorBackSkip
+    LDY #1 \ zero means one
+.esc5bCursorBackSkip
+    \ Do not go past the left-hand edge of the screen
+    STX buffer \ store current X in zero page
+    CPY buffer : BMI esc5bCursorBackLoop \ value in Y is ok - go straight to loop
+    LDY buffer : BEQ esc5bCursorBackDone \ use calculated maximum unless it is 0
+.esc5bCursorBackLoop
+    LDA #8 : JSR oswrch \ VDU 8 - cursor back
+    DEY : BNE esc5bCursorBackLoop
+.esc5bCursorBackDone
+    JMP esc5bCheckForUnwind
+
 .esc5bCursorPositionJmp
     LDA flags : CMP #1 : BNE cursorPositionTwoFlagsOnStack
     LDA #0 : PHA : INC flags \ push default 0 onto the stack
 .cursorPositionTwoFlagsOnStack
-    LDA #31 : JSR oswrch \ VDU 31
+    LDA #31 : JSR oswrch \ VDU 31 - move cursor
     DEC flags : PLA : BEQ cursorPositionFirstIsZero
     SEC : SBC #1 \ move from 1-based to 0-based
 .cursorPositionFirstIsZero
@@ -97,12 +139,12 @@
     JMP esc5bCheckForUnwind
 
 .esc5bEraseInDisplayFull
-    LDA #12 : JSR oswrch \ VDU 12
+    LDA #12 : JSR oswrch \ VDU 12 - CLS
     JMP esc5bCheckForUnwind
 
 .esc5bEraseInDisplayEOS
     LDA #&86 : JSR osbyte \ read cursor position
-    CPY #31 : BEQ esc5bEraseInDisplayEOSJump \ are we on the bottom line TODO 32 should not be hardcoded
+    CPY #31 : BEQ esc5bEraseInDisplayEOSJump \ are we on the bottom line TODO hardcoded height
 
     TYA : PHA \ save Y position on stack
     TXA : PHA \ save X position on stack
