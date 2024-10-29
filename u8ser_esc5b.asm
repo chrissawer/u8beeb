@@ -28,6 +28,8 @@
     JSR esc5bPairHandle : PHA : INC flags
     CPY #'m' : BEQ esc5bColourList
 
+    CPY #'A' : BEQ esc5bCursorUp
+    CPY #'B' : BEQ esc5bCursorDown
     CPY #'C' : BEQ esc5bCursorForward
     CPY #'D' : BEQ esc5bCursorBack
     CPY #'H' : BEQ esc5bCursorPosition
@@ -70,6 +72,10 @@
 
 .esc5bColourList
     JMP esc5bColourListJmp
+.esc5bCursorUp
+    JMP esc5bCursorUpJmp
+.esc5bCursorDown
+    JMP esc5bCursorDownJmp
 .esc5bCursorForward
     JMP esc5bCursorForwardJmp
 .esc5bCursorBack
@@ -80,6 +86,40 @@
     JMP esc5bEraseInDisplayJmp
 .esc5bEraseInLine
     JMP esc5bEraseInLineJmp
+
+.esc5bCursorUpJmp
+    LDA #&86 : JSR osbyte \ read cursor position
+    DEC flags : PLA
+    TAX : BNE esc5bCursorUpSkip
+    LDX #1 \ zero means one
+.esc5bCursorUpSkip
+    \ Do not go past the top of the screen
+    STY buffer \ store current Y in zero page
+    CPX buffer : BMI esc5bCursorUpLoop \ value in X is ok - go straight to loop
+    LDX buffer : BEQ esc5bCursorUpDone \ use calculated maximum unless it is 0
+.esc5bCursorUpLoop
+    LDA #11 : JSR oswrch \ VDU 11 - cursor up
+    DEX : BNE esc5bCursorUpLoop
+.esc5bCursorUpDone
+    JMP esc5bCheckForUnwind
+
+.esc5bCursorDownJmp
+    LDA #&86 : JSR osbyte \ read cursor position
+    DEC flags : PLA
+    TAX : BNE esc5bCursorDownSkip
+    LDX #1 \ zero means one
+.esc5bCursorDownSkip
+    \ Do not go past the bottom of the screen
+    TYA : EOR #&FF \ subtract current Y from screen height-1
+    CLC : ADC #32 \ TODO hardcoded height
+    STA buffer
+    CPX buffer : BMI esc5bCursorDownLoop \ value in X is ok - go straight to loop
+    TAX : BEQ esc5bCursorDownDone \ use calculated maximum unless it is 0
+.esc5bCursorDownLoop
+    LDA #10 : JSR oswrch \ VDU 10 - cursor down
+    DEX : BNE esc5bCursorDownLoop
+.esc5bCursorDownDone
+    JMP esc5bCheckForUnwind
 
 .esc5bCursorForwardJmp
     LDA #&86 : JSR osbyte \ read cursor position
