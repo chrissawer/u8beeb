@@ -36,6 +36,11 @@
 
     CPY #'J' : BEQ esc5bEraseInDisplay
     CPY #'K' : BEQ esc5bEraseInLine
+
+    CPY #'h' : BEQ esc5bIgnoreAndUnwind \ Setup functions
+    CPY #'l' : BEQ esc5bIgnoreAndUnwind \ Setup functions
+    CPY #'q' : BEQ esc5bIgnoreAndUnwind \ LED on/off
+
     LDA #'$' : JSR oswrch \ TODO debug
     TYA : JSR oswrch \ TODO debug unhandled code between dollar signs
 .esc5bPairFinalSkip
@@ -45,6 +50,13 @@
     LDA #'$' : JSR oswrch \ TODO debug
     PLA : DEC flags : BNE esc5bErrorUnwindLoop
 .esc5bErrorUnwindLoopDone
+    PROCESSING_DONE
+
+.esc5bIgnoreAndUnwind
+    LDA flags : BEQ esc5bUnwindLoopDone
+.esc5bUnwindLoop
+    PLA : DEC flags : BNE esc5bUnwindLoop
+.esc5bUnwindLoopDone
     PROCESSING_DONE
 
 .esc5bPairHandle \ X contains number of characters read
