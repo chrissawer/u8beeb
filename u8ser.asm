@@ -120,14 +120,24 @@ ORG &2000
 
 .esc
     JSR readByteBlocking
-    CPY #&5B : BEQ esc5b
+    CPY #&5B : BEQ esc5bJump
     CPY #'D' : BEQ cursorDown
     CPY #'M' : BEQ cursorUp
     CPY #'E' : BEQ cursorNextLine
     CPY #'7' : BEQ cursorSave
     CPY #'8' : BEQ cursorRestore
+    CPY #'<' : BEQ ignore \ exit VT52 mode
+    CPY #'>' : BEQ ignore \ keypad keys in numeric mode
+    CPY #'P' : BEQ dcs
+    CPY #'\' : BEQ ignore \ DCS terminate
+
+    \TYA : JSR oswrch \ TODO debug
     LDA #'!' : JSR oswrch \ TODO debug indicates unhandled code
+.ignore
     JMP checkKeyboard
+
+.esc5bJump
+    JMP esc5b
 
 .nonPrint
     CPY #&08 : BEQ print \ backspace
@@ -162,6 +172,11 @@ ORG &2000
     LDA #31 : JSR oswrch \ VDU 31 - move cursor
     LDA cursorX : JSR oswrch
     LDA cursorY : JSR oswrch
+    JMP checkKeyboard
+
+.dcs
+    JSR readByteBlocking
+    CPY #'\' : BNE dcs \ should really check it's 1b then \
     JMP checkKeyboard
 
 MACRO GET_NEXT_BYTE
