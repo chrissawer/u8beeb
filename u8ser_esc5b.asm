@@ -1,4 +1,4 @@
-.esc5b \ sequences of ASCII numbers (up to 3 digits) separated by a semicolon
+.esc5b \ sequences of ascii numbers (up to 3 digits) separated by a semicolon
     LDA #0: STA flags \ use flags for stack count
 .esc5bNextPair
     LDA #0: STA byteReadA : STA byteReadB : STA byteReadC
@@ -27,6 +27,7 @@
 .esc5bPairFinal \ X contains number of characters read
     JSR esc5bPairHandle : PHA : INC flags
     CPY #'m' : BEQ esc5bColourList
+    CPY #'n' : BEQ esc5bStatus
 
     CPY #'A' : BEQ esc5bCursorUp
     CPY #'B' : BEQ esc5bCursorDown
@@ -84,6 +85,9 @@
 
 .esc5bColourList
     JMP esc5bColourListJmp
+.esc5bStatus
+    JMP esc5bStatusJmp
+
 .esc5bCursorUp
     JMP esc5bCursorUpJmp
 .esc5bCursorDown
@@ -329,3 +333,60 @@
     TXA : CLC : ADC #88 : JSR oswrch \ ANSI 40-47 -> Beeb 128-135
 .esc5bColourDone
     RTS
+
+.esc5bStatusJmp
+    DEC flags : PLA
+    CMP #5 : BEQ esc5bStatusRequestStatus
+    CMP #6 : BEQ esc5bStatusRequestCursorPosition
+    JMP esc5bCheckForUnwind
+
+.esc5bStatusRequestStatus
+    LDA #&8A : LDX #2
+    LDY #&1B : JSR osbyte \ ESC
+    LDY #&5B : JSR osbyte \ [
+    LDY #'0' : JSR osbyte
+    LDY #'n' : JSR osbyte
+    JMP esc5bCheckForUnwind
+
+.esc5bStatusRequestCursorPosition
+    LDA #&8A : LDX #2
+    LDY #&1B : JSR osbyte \ ESC
+    LDY #&5B : JSR osbyte \ [
+
+    LDA #&86 : JSR osbyte \ read cursor position
+    INX : INY \ move to 1-based
+    TXA : PHA \ store X position on stack
+    TYA : CMP #10 : BMI yLtTen
+    LDX #0
+.cursorPositionYTensLoop
+    \ Use X to store 10s digit
+    SEC : SBC #10 : INX
+    CMP #10 : BPL cursorPositionYTensLoop
+
+    PHA \ store Y units on stack
+    TXA : CLC : ADC #'0' : TAY \ Print row tens
+    LDA #&8A : LDX #2 : JSR osbyte \ row
+    PLA
+
+.yLtTen
+    CLC : ADC #'0' : TAY \ Print row units
+    LDA #&8A : LDX #2 : JSR osbyte \ row
+    LDY #';' : JSR osbyte
+
+    PLA : CMP #10 : BMI xLtTen
+    LDX #0
+.cursorPositionXTensLoop
+    \ Use X to store 10s digit
+    SEC : SBC #10 : INX
+    CMP #10 : BPL cursorPositionXTensLoop
+
+    PHA \ store X units on stack
+    TXA : CLC : ADC #'0' : TAY \ Print row tens
+    LDA #&8A : LDX #2 : JSR osbyte \ row
+    PLA
+
+.xLtTen
+    CLC : ADC #'0' : TAY \ Print column units
+    LDA #&8A : LDX #2 : JSR osbyte \ column
+    LDY #'R' : JSR osbyte
+    JMP esc5bCheckForUnwind
