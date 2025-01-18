@@ -248,6 +248,15 @@
     EQUW &2122 \ ™
     EQUB &F1, &5B, &55, &51, &00, &00, &00, &00
 
+    EQUW &23BA \ horizontal scan line 1
+    EQUB &00, &FF, &00, &00, &00, &00, &00, &00
+    EQUW &23BB \ horizontal scan line 3
+    EQUB &00, &00, &FF, &00, &00, &00, &00, &00
+    EQUW &23BC \ horizontal scan line 7
+    EQUB &00, &00, &00, &00, &FF, &00, &00, &00
+    EQUW &23BD \ horizontal scan line 9
+    EQUB &00, &00, &00, &00, &00, &FF, &00, &00
+
     EQUW &2500 \ light horizontal
     EQUB &00, &00, &00, &FF, &00, &00, &00, &00
     EQUW &2502 \ light vertical
@@ -271,13 +280,13 @@
     EQUW &253C \ light vertical and horizontal
     EQUB &18, &18, &18, &FF, &18, &18, &18, &18
 
-    EQUW &256D
+    EQUW &256D \ light arc down and right
     EQUB &00, &00, &00, &07, &0C, &18, &18, &18
-    EQUW &256E
+    EQUW &256E \ light arc down and left
     EQUB &00, &00, &00, &E0, &30, &18, &18, &18
-    EQUW &256F
+    EQUW &256F \ light arc up and left
     EQUB &18, &18, &30, &E0, &00, &00, &00, &00
-    EQUW &2570
+    EQUW &2570 \ light arc up and right
     EQUB &18, &18, &0C, &07, &00, &00, &00, &00
 
     EQUW &2574 \ light left
@@ -288,6 +297,11 @@
     EQUB &00, &00, &00, &1F, &00, &00, &00, &00
     EQUW &2577 \ light down
     EQUB &00, &00, &00, &18, &18, &18, &18, &18
+
+    EQUW &2592 \ medium shade
+    EQUB &AA, &55, &AA, &55, &AA, &55, &AA, &55
+    EQUW &25C6 \ black diamond
+    EQUB &00, &10, &38, &7C, &38, &10, &00, &00
 
     EQUW 0 \ end marker
 .charDefinitionsEnd
